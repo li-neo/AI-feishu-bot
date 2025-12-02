@@ -1,0 +1,158 @@
+{
+    "schema": "2.0",
+    "config": {
+        "update_multi": true,
+        "style": {
+            "text_size": {
+                "normal_v2": {
+                    "default": "normal",
+                    "pc": "normal",
+                    "mobile": "heading"
+                }
+            }
+        }
+    },
+    "body": {
+        "direction": "vertical",
+        "horizontal_spacing": "8px",
+        "vertical_spacing": "8px",
+        "horizontal_align": "left",
+        "vertical_align": "top",
+        "elements": [
+            {
+                "tag": "markdown",
+                "content": "本周总结：${common}",
+                "text_align": "left",
+                "text_size": "normal_v2",
+                "margin": "0px 0px 0px 0px",
+                "icon": {
+                    "tag": "standard_icon",
+                    "token": "apaas_colorful",
+                    "color": "grey"
+                },
+                "element_id": "common"
+            },
+            {
+                "tag": "repeat",
+                "variable": "item",
+                "elements": [
+                    {
+                        "tag": "column_set",
+                        "horizontal_spacing": "8px",
+                        "horizontal_align": "left",
+                        "columns": [
+                            {
+                                "tag": "column",
+                                "width": "weighted",
+                                "elements": [
+                                    {
+                                        "tag": "markdown",
+                                        "content": "${item.name}",
+                                        "text_align": "left",
+                                        "text_size": "normal_v2",
+                                        "margin": "0px 0px 0px 0px",
+                                        "element_id": "item_name1"
+                                    },
+                                    {
+                                        "tag": "hr",
+                                        "margin": "0px 0px 0px 0px"
+                                    },
+                                    {
+                                        "tag": "markdown",
+                                        "content": "${item.desc}",
+                                        "text_align": "left",
+                                        "text_size": "normal_v2",
+                                        "margin": "0px 0px 0px 0px",
+                                        "element_id": "item_desc1"
+                                    },
+                                    {
+                                        "tag": "hr",
+                                        "margin": "0px 0px 0px 0px"
+                                    },
+                                    {
+                                        "tag": "img_combination",
+                                        "combination_mode": "double",
+                                        "img_list": [
+                                            {
+                                                "img_key": "img_v3_02qj_f1536d71-ebb9-429b-8efb-39f2fcfc73cg"
+                                            },
+                                            {
+                                                "img_key": "img_v3_02qj_69d8191e-a087-4f77-a269-e1d1fe61406g"
+                                            }
+                                        ],
+                                        "img_list_length": 2,
+                                        "combination_transparent": false,
+                                        "margin": "0px 0px 0px 0px",
+                                        "element_id": "item_picture1"
+                                    },
+                                    {
+                                        "tag": "hr",
+                                        "margin": "0px 0px 0px 0px"
+                                    },
+                                    {
+                                        "tag": "button",
+                                        "text": {
+                                            "tag": "plain_text",
+                                            "content": "Demo视频"
+                                        },
+                                        "type": "primary_filled",
+                                        "width": "fill",
+                                        "behaviors": [
+                                            {
+                                                "type": "open_url",
+                                                "default_url": "",
+                                                "android_url": "",
+                                                "ios_url": "",
+                                                "pc_url": ""
+                                            }
+                                        ],
+                                        "margin": "4px 0px 4px 0px"
+                                    }
+                                ],
+                                "direction": "horizontal",
+                                "horizontal_spacing": "8px",
+                                "vertical_spacing": "8px",
+                                "horizontal_align": "left",
+                                "vertical_align": "top",
+                                "weight": 1
+                            }
+                        ],
+                        "margin": "0px 0px 0px 0px"
+                    }
+                ]
+            },
+            {
+                "tag": "button",
+                "text": {
+                    "tag": "plain_text",
+                    "content": "查看完整周报"
+                },
+                "type": "primary_filled",
+                "width": "fill",
+                "behaviors": [
+                    {
+                        "type": "open_url",
+                        "default_url": "https://bytedance.larkoffice.com/docx/ONGcdldR1oG7ggxjYEyc75zrn0f",
+                        "pc_url": "https://bytedance.larkoffice.com/docx/ONGcdldR1oG7ggxjYEyc75zrn0f",
+                        "ios_url": "https://bytedance.larkoffice.com/docx/ONGcdldR1oG7ggxjYEyc75zrn0f",
+                        "android_url": ""
+                    }
+                ],
+                "margin": "4px 0px 4px 0px",
+                "element_id": "PydVozJZxk9bx5JOPKXz"
+            }
+        ]
+    },
+    "header": {
+        "title": {
+            "tag": "plain_text",
+            "content": "AI前沿 每周5分钟"
+        },
+        "subtitle": {
+            "tag": "plain_text",
+            "content": ""
+        },
+        "template": "blue",
+        "padding": "12px 16px 12px 16px"
+    }
+}

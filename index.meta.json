@@ -1,0 +1,7 @@
+{
+  "code": {
+    "entry": "main.py",
+    "work_dir": "code",
+    "runtime": "python"
+  }
+}
