@@ -12,7 +12,9 @@ import sys
 import time
 from typing import Dict, Any, List, Optional, Set
 
-from config import PROCESSED_MESSAGES_FILE, MAX_MESSAGE_AGE
+import lark_oapi as lark
+from lark_oapi.api.im.v1 import *
+from config import PROCESSED_MESSAGES_FILE, MAX_MESSAGE_AGE, APP_ID, APP_SECRET
 
 # 用于消息去重的集合，存储已处理的消息ID
 processed_messages: Set[str] = set()
@@ -142,6 +144,64 @@ def send_message_to_chat(tenant_access_token: str, chat_id: str, content: str, m
             error_msg += f" Response: {e.response.text}"
         print(f"ERROR: {error_msg}", file=sys.stderr)
         raise
+
+def get_image_base64(tenant_access_token: str, message_id: str, image_key: str) -> Optional[str]:
+    """
+    根据消息ID和图片key获取图片二进制流，并转换为base64编码
+
+    Args:
+        tenant_access_token: 租户访问令牌
+        message_id: 消息ID
+        image_key: 图片key
+
+    Returns:
+        Optional[str]: 图片的base64编码字符串，如果获取失败则返回None
+    """
+    import base64
+    
+    try:
+        # 创建飞书SDK客户端
+        client = lark.Client.builder() \
+            .app_id(APP_ID) \
+            .app_secret(APP_SECRET) \
+            .log_level(lark.LogLevel.DEBUG) \
+            .build()
+        
+        # 构造请求对象
+        request: GetMessageResourceRequest = GetMessageResourceRequest.builder() \
+            .message_id(message_id) \
+            .file_key(image_key) \
+            .type("image") \
+            .build()
+        
+        # 发起请求
+        response: GetMessageResourceResponse = client.im.v1.message_resource.get(request)
+        
+        # 处理失败返回
+        if not response.success():
+            error_msg = f"client.im.v1.message_resource.get failed, code: {response.code}, msg: {response.msg}, log_id: {response.get_log_id()}"
+            if hasattr(response, 'raw') and response.raw:
+                error_msg += f", resp: {json.dumps(json.loads(response.raw.content), indent=4, ensure_ascii=False)}"
+            print(f"ERROR: {error_msg}", file=sys.stderr)
+            return None
+        
+        # 读取图片二进制数据
+        image_data = response.file.read()
+        
+        # 获取Content-Type（默认为image/jpeg）
+        content_type = "image/jpeg"
+        
+        # 将二进制数据转换为base64编码
+        base64_encoded = base64.b64encode(image_data).decode('utf-8')
+        
+        # 返回带前缀的base64字符串，方便LLM处理
+        return f"data:{content_type};base64,{base64_encoded}"
+            
+    except Exception as e:
+        error_msg = f"Error getting image data with SDK: {e}"
+        print(f"ERROR: {error_msg}", file=sys.stderr)
+        return None
+
 
 def reply_message(tenant_access_token: str, message_id: str, content: str, msg_type: str = "text") -> Dict[str, Any]:
     """

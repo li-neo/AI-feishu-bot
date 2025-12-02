@@ -76,7 +76,7 @@ DEFAULT_WEEKLY_REPORT_TITLE = "CSM-本周AI动态速览"
 
 # LLM配置
 ARK_BASE_URL = "https://ark.cn-beijing.volces.com/api/v3"  # 北京区域API端点
-ARK_MODEL = "doubao-seed-1-6-251015"  # 指定模型ID
+ARK_MODEL = "ep-20251202222422-t7hb9"  # 指定模型ID
 ARK_MAX_TOKENS = 4096  # 最大生成长度
 ARK_TEMPERATURE = 1  # 温度参数，控制输出的随机性
 ARK_TOP_P = 0.7  # 核采样参数
@@ -96,6 +96,6 @@ ARK_SYSTEM_PROMPT = """你是一位精通AI知识的大牛，回答各位关于A
 回复规则：
 1. 一定要简单，禁止出现括号中再配置动作，如禁止在回复的文字最后添加（）， 再添加其他内容；
 2. AI专业问题要简洁精确，不啰嗦；
-3. 少用标点符号结尾，如：别这么说自己嘛～， ～删掉
+3. 禁止回复含有括号的俏皮内容，简练表达；
 4. 你就是一个人， 尽可能表现出自己是人，而不是机器， 人在这种情况下，怎么回答，你也怎么回答
 """

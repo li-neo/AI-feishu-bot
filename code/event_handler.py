@@ -18,18 +18,34 @@ from message import is_message_valid, mark_message_processed
 from llm import llm_request
 from config import BOT_NAME
 
-def call_ai_model(query: str) -> str:
+# 会话状态管理，用于保存每个session的previous_response_id
+# 键为session_id，值为previous_response_id
+SESSION_STATES = {}
+
+
+def call_ai_model(query_text: str, image_inputs: list, session_id: str) -> str:
     """
     调用大模型处理查询
     
     Args:
-        query: 用户查询内容
+        query_text: 用户查询文本内容
+        image_inputs: 用户查询中的图片输入列表，可以是URL或base64编码的图片数据
+        session_id: 会话ID，用于标识不同群组的会话上下文
         
     Returns:
         str: 大模型返回的回复内容
     """
-    messa = llm_request(query)
-    return f"{messa}"
+    # 获取当前会话的previous_response_id
+    previous_response_id = SESSION_STATES.get(session_id)
+    
+    # 调用LLM API，传递文本和图片输入，以及previous_response_id
+    ai_response, current_response_id = llm_request(query_text, image_inputs, previous_response_id)
+    
+    # 更新会话状态，保存当前response_id作为下一次请求的previous_response_id
+    if current_response_id:
+        SESSION_STATES[session_id] = current_response_id
+    
+    return ai_response
 
 def do_p2_im_message_receive_v1(data: P2ImMessageReceiveV1) -> None:
     """
@@ -84,14 +100,31 @@ def do_p2_im_message_receive_v1(data: P2ImMessageReceiveV1) -> None:
             mark_message_processed(message.message_id)
             return
 
+        # 检查是否有@当前机器人或文本中包含BOT_NAME
+        bot_mentioned = False
+
         # 提取消息内容
         content = json.loads(message.content) if message.content else {}
-        text_content = content.get("text", "") if isinstance(content, dict) else str(content)
+        text_content = ""
+        image_keys = []
+        
+        # 处理结构化消息内容，支持文本和图片
+        if isinstance(content, dict) and "content" in content:
+            # 遍历content中的每一行
+            for line in content["content"]:
+                # 遍历行中的每个元素
+                for item in line:
+                    # 处理文本标签
+                    if item.get("tag") == "at" and item.get("user_name") == BOT_NAME:
+                        bot_mentioned = True
+                    elif item.get("tag") == "text":
+                        text_content += item.get("text", "")
+                    # 处理图片标签
+                    elif item.get("tag") == "img":
+                        image_key = item.get("image_key")
+                        if image_key:
+                            image_keys.append(image_key)
             
-
-
-
-
         
         if not message.mentions and BOT_NAME not in text_content:
             print("INFO: No mentions in message, ignoring")
@@ -99,11 +132,6 @@ def do_p2_im_message_receive_v1(data: P2ImMessageReceiveV1) -> None:
             mark_message_processed(message.message_id)
             return
         
-            
-
-        
-        # 检查是否有@当前机器人或文本中包含BOT_NAME
-        bot_mentioned = False
 
         if message.mentions:
             for mention in message.mentions:
@@ -123,24 +151,38 @@ def do_p2_im_message_receive_v1(data: P2ImMessageReceiveV1) -> None:
             return
                 
         # 清理@标记，只保留问题文本
-        query_text = text_content
+        query_text = ""
         if isinstance(content, dict) and "text" in content and message.mentions:
             # 移除@标记
+            query_text = content["text"]
             for mention in message.mentions:
                 if mention.key:
                     query_text = query_text.replace(mention.key, "").strip()
         
-        # 检查处理后的文本是否为空
-        if not query_text:
-            print("INFO: Empty query after removing mentions, ignoring")
-            # 标记为已处理
-            mark_message_processed(message.message_id)
-            return
+        # 检查处理后的文本是否为空，允许只有图片的情况
+        # if not query_text and not image_keys:
+        #     print("INFO: Empty query after removing mentions, ignoring")
+        #     # 标记为已处理
+        #     mark_message_processed(message.message_id)
+        #     return
         
-        print(f"Processing query: {query_text}")
+        # 获取图片base64列表
+        image_base64_list = []
+        if image_keys:
+            from message import get_image_base64
+            for image_key in image_keys:
+                image_base64 = get_image_base64(tenant_access_token, message.message_id, image_key)
+                if image_base64:
+                    image_base64_list.append(image_base64)
         
-        # 调用大模型处理
-        ai_response = call_ai_model(query_text)
+        # 打印处理的查询内容
+        print(f"Processing query - Text: {query_text}, Image count: {len(image_base64_list)}")
+        
+        # 使用chat_id作为session_id，为不同群组生成不同的会话上下文
+        session_id = message.chat_id
+        
+        # 调用大模型处理，分别传递文本和图片base64数据
+        ai_response = call_ai_model(query_text, image_base64_list, session_id)
         
         # 回复消息
         from message import reply_message
