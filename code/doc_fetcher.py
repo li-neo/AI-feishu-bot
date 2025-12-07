@@ -460,7 +460,7 @@ def parse_sheet_data(sheet_data: Dict[str, Any], tenant_access_token: str, bitab
             url_text = ""
             if isinstance(url_field, dict):
                 # 超链接类型，包含text和url属性
-                url = url_field.get("url", "")
+                url = url_field.get("link", "")
                 url_text = url_field.get("text", "")
             else:
                 # 文本类型，如果内容是"AI-周报"，则设置为空，因为它不是一个有效的URL
